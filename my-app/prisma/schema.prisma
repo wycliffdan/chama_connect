@@ -4,11 +4,165 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   // provider = "postgresql"
+//   provider = "mongodb"
+//   url      = env("DATABASE_URL")
+// }
+
+
+// model Meeting {
+//     id          Int      @id @default(autoincrement())
+//     title       String
+//     description String
+//     date        DateTime
+//     time        String
+//     location    String
+//     agenda      String
+//     organizer   String
+//     status      String   @default("Scheduled") // Scheduled, Cancelled, Completed
+//     createdAt   DateTime @default(now())
+//     updatedAt   DateTime @updatedAt
+
+//     // Relations
+//     attendees   Attendee[]
+
+//     // Indexes for better query performance
+//     @@index([date])
+//     @@index([location])
+//     @@index([status])
+// }
+
+// model Attendee {
+//     id        Int     @id @default(autoincrement())
+//     name      String
+//     email     String  @unique
+//     meetingId Int
+//     meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+// }
+
+// model User {
+//     id    Int     @id @default(autoincrement())
+//     email String  @unique
+//     name  String?
+// }
+
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  email    String  @unique
+  name     String?
+  phone    String? // Add phone number for communication
+  role     String  @default("member") // member, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  contributions Contribution[]
+  loans         Loan[]
+  meetings      Meeting[] // Meetings organized by the user
+  attendees     Attendee[] // Meetings attended by the user
+  // chamaas       Chamaa[]  // Chamaas the user belongs to
+}
+
+model Meeting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  date        DateTime
+  time        String
+  location    String
+  agenda      String
+  organizerId String   @db.ObjectId
+  organizer   User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  status      String   @default("Scheduled") // Scheduled, Cancelled, Completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+
+
+  // Relations
+  attendees   Attendee[]
+  chamaaId    String   @db.ObjectId
+  chamaa      Chamaa   @relation(fields: [chamaaId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance
+  @@index([date])
+  @@index([location])
+  @@index([status])
+}
+
+model Attendee {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meetingId String   @db.ObjectId
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Contribution {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount    Float
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chamaaId  String   @db.ObjectId
+  chamaa    Chamaa   @relation(fields: [chamaaId], references: [id], onDelete: Cascade)
+  month     Int      // Month of contribution (e.g., 1 for January)
+  year      Int      // Year of contribution
+  createdAt DateTime @default(now())
+}
+
+model Loan {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount      Float
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chamaaId    String   @db.ObjectId
+  chamaa      Chamaa   @relation(fields: [chamaaId], references: [id], onDelete: Cascade)
+  status      String   @default("pending") // pending, approved, repaid
+  type        String   @default("emergency") // emergency, bank-like
+  interestRate Float   @default(0.0) // Interest rate in percentage
+  repaymentPeriod Int  // Repayment period in months
+  totalRepaymentAmount Float // Total amount to repay (amount + interest)
+  dueDate     DateTime? // Due date for repayment
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  repayments  Repayment[] // Track repayments for this loan
+}
+
+model Repayment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  loanId    String   @db.ObjectId
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  amount    Float    // Amount repaid
+  repaidAt  DateTime @default(now()) // Date of repayment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Chamaa {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  // members     User[]   // Members of the chamaa
+  contributions Contribution[]
+  loans       Loan[]
+  meetings    Meeting[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
