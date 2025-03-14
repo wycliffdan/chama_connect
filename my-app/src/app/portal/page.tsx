@@ -1,193 +1,260 @@
-// "use client";
 
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { useRouter } from "next/navigation";
-// import { useEffect } from "react";
-// import { toast } from "sonner";
 
-// const Portal = () => {
-//   const router = useRouter();
 
-//   useEffect(() => {
-//     toast.success("Welcome to the Portal!");
-//   }, []);
 
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6">
-//       <h1 className="text-4xl font-bold mb-6">Welcome to Chamaa Connect Portal</h1>
-//       <p className="text-lg mb-4">Select an option to proceed:</p>
 
-//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl">
-//         {/* View Dashboard */}
-//         <Card className="bg-gray-800 hover:bg-gray-700 transition cursor-pointer" onClick={() => router.push("/dashboard")}> 
-//           <CardHeader>
-//             <CardTitle className="text-white">View Dashboard</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p>Check financial summaries, contributions, and savings.</p>
-//           </CardContent>
-//         </Card>
 
-//         {/* Request Loan */}
-//         <Card className="bg-gray-800 hover:bg-gray-700 transition cursor-pointer" onClick={() => router.push("/loan-request")}> 
-//           <CardHeader>
-//             <CardTitle className="text-white">Request Loan</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p>Apply for an emergency loan instantly.</p>
-//           </CardContent>
-//         </Card>
-
-//         {/* See Contributions */}
-//         <Card className="bg-gray-800 hover:bg-gray-700 transition cursor-pointer" onClick={() => router.push("/contributions")}> 
-//           <CardHeader>
-//             <CardTitle className="text-white">See Contributions</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p>View monthly savings and contribution records.</p>
-//           </CardContent>
-//         </Card>
-
-//         {/* View Members */}
-//         <Card className="bg-gray-800 hover:bg-gray-700 transition cursor-pointer" onClick={() => router.push("/members")}> 
-//           <CardHeader>
-//             <CardTitle className="text-white">View Members</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p>See all members and their contribution status.</p>
-//           </CardContent>
-//         </Card>
-
-//         {/* Announcements & Meetings */}
-//         <Card className="bg-gray-800 hover:bg-gray-700 transition cursor-pointer" onClick={() => router.push("/updates")}> 
-//           <CardHeader>
-//             <CardTitle className="text-white">Announcements & Meetings</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p>Stay updated with group meetings and news.</p>
-//           </CardContent>
-//         </Card>
-//       </div>
-
-//       {/* Logout Button */}
-//       <Button onClick={() => router.push("/")} className="mt-6 bg-red-500 hover:bg-red-600">
-//         Logout
-//       </Button>
-//     </div>
-//   );
-// };
-
-// export default Portal;
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth"; // Authentication hook
-import { useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PortalNav from "./PortalNav";
-import { FaPiggyBank, FaMoneyBillWave, FaHandsHelping, FaBell } from "react-icons/fa"; // Icons
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+// import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function PortalPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  // Mock data for demonstration
+  const userStats = {
+    totalContributions: 50000,
+    totalLoans: 20000,
+    totalRepayments: 15000,
+  };
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/portal");
-    }
-  }, [isAuthenticated, isLoading, router]);
+  const groupStats = {
+    totalSavings: 1000000,
+    totalLoansDisbursed: 500000,
+    repaymentRate: "95%",
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
-      </div>
-    );
-  }
+  const upcomingEvents = [
+    {
+      title: "Monthly Meeting",
+      date: "2023-10-15",
+      time: "10:00 AM",
+      location: "Community Hall",
+    },
+    {
+      title: "Loan Repayment Deadline",
+      date: "2023-10-20",
+      description: "Ensure repayment is made on time.",
+    },
+  ];
 
-  if (!isAuthenticated) return null; // Redirecting...
+  const testimonials = [
+    {
+      name: "Jane Doe",
+      story: "Thanks to Chamaa Connect, I was able to grow my business with a low-interest loan. The process was quick and easy!",
+    },
+    {
+      name: "John Doe",
+      story: "The contributions I made helped me save for my child's education. I'm grateful for this platform.",
+    },
+  ];
+
+  const financialTips = [
+    "Always plan your budget before taking a loan.",
+    "Make timely contributions to avoid penalties.",
+    "Regularly check your repayment schedule to stay on track.",
+  ];
+
+  const notifications = [
+    "Reminder: Monthly meeting on 15th October.",
+    "New loan products now available. Apply today!",
+    "Contribution deadline for this month is 25th October.",
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-600 to-purple-500">
-      {/* Navbar */}
-      <PortalNav />
+    <div className="p-6 space-y-8">
+      <h1 className="text-2xl font-bold">Welcome to Chamaa Connect</h1>
 
-      {/* Main Content */}
-      <div className="container mx-auto p-6">
-        <h1 className="text-4xl font-bold text-white text-center mb-8">
-          Welcome to <span className="text-yellow-300">Chamaa Connect Portal</span>
-        </h1>
+      {/* Quick Links Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Loans Card */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-xl">Loans</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Loans from Chamaa Connect have helped members grow their businesses, pay for education, and meet emergency needs. Join the many who have benefited!
+            </p>
+            
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => router.push("/portal/loans")} // Navigate on click
+            >
+              Explore Loan Options
+            </Button>
+          </CardContent>
+        </Card>
 
-        {/* Sections Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {/* Contributions */}
-          <FeatureCard
-            title="Contributions"
-            description="Track monthly contributions and savings."
-            href="/portal/contributions"
-            Icon={FaPiggyBank}
-            color="bg-blue-600"
-          />
+        {/* Contributions Card */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-xl">Contributions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Make your contributions to support the group and earn benefits. Your contributions help others and grow your savings.
+            </p>
+            
+            
+             
+             <Button
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => router.push("/portal/contributions")} // Navigate on click
+            >
+              Make a Contribution
+            </Button>
+          </CardContent>
+        </Card>
 
-          {/* ROSCA Payouts */}
-          <FeatureCard
-            title="ROSCA Payouts"
-            description="See who has received their payout and who's next."
-            href="/portal/payouts"
-            Icon={FaMoneyBillWave}
-            color="bg-green-600"
-          />
-
-          {/* Emergency Loans */}
-          <FeatureCard
-            title="Emergency Loans"
-            description="Request and track emergency loans."
-            href="/portal/loans"
-            Icon={FaHandsHelping}
-            color="bg-red-600"
-          />
-
-          {/* New Updates */}
-          <FeatureCard
-            title="New Updates"
-            description="Stay updated with meetings and announcements."
-            href="/portal/updates"
-            Icon={FaBell}
-            color="bg-yellow-500"
-          />
-        </div>
+        {/* Repayments Card */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-xl">Repayments</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              View your repayment history and manage your loan repayments. Stay on track and avoid penalties.
+            </p>
+           
+           
+             
+             <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => router.push("/portal/repayment")} // Navigate on click
+            >
+             View Repayments
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Group Performance Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Group Performance Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Total Savings</p>
+              <p className="text-2xl font-bold">
+                Ksh {groupStats.totalSavings.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Loans Disbursed</p>
+              <p className="text-2xl font-bold">
+                Ksh {groupStats.totalLoansDisbursed.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Repayment Rate</p>
+              <p className="text-2xl font-bold">{groupStats.repaymentRate}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Testimonials Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Success Stories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="border-b pb-2">
+                <p className="text-sm font-semibold">{testimonial.name}</p>
+                <p className="text-xs text-gray-600">{testimonial.story}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Financial Tips Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Financial Tips</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {financialTips.map((tip, index) => (
+              <div key={index} className="flex items-start">
+                <span className="text-sm text-gray-600">• {tip}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Notifications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {notifications.map((notification, index) => (
+              <div key={index} className="flex items-start">
+                <span className="text-sm text-gray-600">• {notification}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upcoming Events */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Upcoming Events</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {upcomingEvents.map((event, index) => (
+              <div key={index} className="border-b pb-2">
+                <p className="text-sm font-semibold">{event.title}</p>
+                <p className="text-xs text-gray-500">
+                  {event.date} {event.time && `at ${event.time}`}
+                </p>
+                {event.location && (
+                  <p className="text-xs text-gray-500">{event.location}</p>
+                )}
+                {event.description && (
+                  <p className="text-xs text-gray-500">{event.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activities */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activities</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="border-b pb-2">
+              <p className="text-sm">Contribution of Ksh 2,000 received from Jane Doe.</p>
+              <p className="text-xs text-gray-500">2023-10-01 10:00 AM</p>
+            </div>
+            <div className="border-b pb-2">
+              <p className="text-sm">Loan of Ksh 10,000 approved for John Doe.</p>
+              <p className="text-xs text-gray-500">2023-10-02 11:00 AM</p>
+            </div>
+            <div className="border-b pb-2">
+              <p className="text-sm">Repayment of Ksh 5,000 received from Jane Doe.</p>
+              <p className="text-xs text-gray-500">2023-10-03 12:00 PM</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
-// Feature Card Component
-const FeatureCard = ({
-  title,
-  description,
-  href,
-  Icon,
-  color,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  Icon: React.ElementType;
-  color: string;
-}) => (
-  <Link href={href} className="group">
-    <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center text-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      <div className={`p-4 rounded-full text-white ${color}`}>
-        <Icon className="text-3xl" />
-      </div>
-      <h2 className="text-xl font-semibold mt-4">{title}</h2>
-      <p className="text-gray-600 mt-2">{description}</p>
-      <Button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 transition-all">
-        View {title}
-      </Button>
-    </div>
-  </Link>
-);

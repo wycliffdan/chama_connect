@@ -28,6 +28,7 @@ export default function BankLoanTable() {
   const fetchLoans = async () => {
     try {
       const response = await fetch("/api/loans/bank");
+      // const response = await fetch("/api/loans");
       if (!response.ok) {
         throw new Error("Failed to fetch loans.");
       }

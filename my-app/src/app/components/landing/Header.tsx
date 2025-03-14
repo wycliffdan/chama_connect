@@ -19,6 +19,7 @@ export default function LandingPage() {
   //   }
   // }, [isAuthenticated, isLoading, router]);
 
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Navbar */}
@@ -115,5 +116,6 @@ export default function LandingPage() {
     </div>
   );
 }
+
 
 

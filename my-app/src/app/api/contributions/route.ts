@@ -1,64 +1,63 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
 
-
-import { prisma } from "@/lib/prisma";
-
-// POST: Submit a contribution
-export async function POST(req: Request) {
-  const { amount, userId, chamaaId, month, year } = await req.json();
-
+// ✅ Add this GET method to fetch contributions
+export async function GET() {
   try {
-    const contribution = await prisma.contribution.create({
-      data: {
-        amount,
-        userId,
-        chamaaId,
-        month,
-        year,
-      },
-    });
-
-    return NextResponse.json(contribution, { status: 201 });
-  } catch (error) {
+    const contributions = await prisma.contribution.findMany();
+    
     return NextResponse.json(
-      { error: "Failed to submit contribution" },
-      { status: 500 }
+      contributions, // Returning the fetched data
+      { status: 200 }
     );
+
+  } catch (error) {
+    console.error("Database Error:", error);
+    return NextResponse.json({ error: "Failed to fetch contributions" }, { status: 500 });
   }
 }
 
-// GET: Fetch contributions for the current month
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const month = searchParams.get("month");
-  const year = searchParams.get("year");
-  const chamaaId = searchParams.get("chamaaId");
 
-  if (!month || !year || !chamaaId) {
-    return NextResponse.json(
-      { error: "Month, year, and chamaaId are required" },
-      { status: 400 }
-    );
-  }
 
-  try {
-    const contributions = await prisma.contribution.findMany({
-      where: {
-        month: parseInt(month),
-        year: parseInt(year),
-        chamaaId,
-      },
-      include: {
-        user: true, // Include user details
-      },
-    });
 
-    return NextResponse.json(contributions, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch contributions" },
-      { status: 500 }
-    );
-  }
-}
+
+// ✅ Keep your existing POST method for adding new contributions
+// export async function POST(req: Request) {
+//   try {
+//     const data = await req.json();
+    
+//     const requiredFields = ['amount', 'date', 'memberId', 'chamaaId'];
+//     const missingFields = requiredFields.filter(field => !data[field]);
+    
+//     if (missingFields.length > 0) {
+//       return NextResponse.json(
+//         { error: `Missing required fields: ${missingFields.join(', ')}` },
+//         { status: 400 }
+//       );
+//     }
+
+//     const dateObj = new Date(data.date);
+    
+//     const contribution = await prisma.contribution.create({
+//       data: {
+//         amount: parseFloat(data.amount),
+//         date: dateObj,
+//         year: dateObj.getFullYear(),
+//         month: dateObj.getMonth() + 1,
+//         memberId: data.memberId,
+//         chamaaId: data.chamaaId,
+//         status: "Pending"
+//       }
+//     });
+
+//     return NextResponse.json(contribution, { status: 201 });
+
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     return NextResponse.json({ error: "Failed to create contribution" }, { status: 500 });
+//   }
+// }
+
+

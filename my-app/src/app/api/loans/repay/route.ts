@@ -1,62 +1,63 @@
-
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const loanId = searchParams.get("loanId");
-
-  if (!loanId) {
-    return NextResponse.json(
-      { error: "Loan ID is required" },
-      { status: 400 }
-    );
-  }
-
+// PUT: Submit a loan repayment
+export async function PUT(req: Request) {
   try {
-    const repayments = await prisma.repayment.findMany({
-      where: { loanId },
-      orderBy: { repaidAt: "desc" },
+    const { loanId, amount } = await req.json();
+
+    // Validate input
+    if (!loanId || !amount || isNaN(parseFloat(amount))) {
+      return NextResponse.json(
+        { error: "Loan ID and amount are required" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch the loan to check its status and remaining amount
+    const loan = await prisma.loan.findUnique({
+      where: { id: loanId },
+      include: { repayments: true },
     });
 
-    return NextResponse.json(repayments, { status: 200 });
+    if (!loan) {
+      return NextResponse.json(
+        { error: "Loan not found" },
+        { status: 404 }
+      );
+    }
+
+    if (loan.status === "repaid") {
+      return NextResponse.json(
+        { error: "Loan has already been repaid" },
+        { status: 400 }
+      );
+    }
+
+    // Create a repayment record
+    const repayment = await prisma.repayment.create({
+      data: {
+        loanId,
+        amount: parseFloat(amount),
+        repaidAt: new Date(),
+      },
+    });
+
+    // Update the loan status if fully repaid
+    const totalRepayments = loan.repayments.reduce((sum, r) => sum + r.amount, 0) + parseFloat(amount);
+    if (totalRepayments >= loan.totalRepaymentAmount) {
+      await prisma.loan.update({
+        where: { id: loanId },
+        data: { status: "repaid" },
+      });
+    }
+
+    return NextResponse.json(repayment, { status: 200 });
   } catch (error) {
-    console.error("Error fetching repayments:", error);
+    console.error("Error processing repayment:", error);
     return NextResponse.json(
-      { error: "Failed to fetch repayments" },
+      { error: "Failed to process repayment" },
       { status: 500 }
     );
   }
 }
-
-
-// import { NextResponse } from "next/server";
-// import { prisma } from "@/lib/prisma";
-
-// export async function GET(req: Request) {
-//   const { searchParams } = new URL(req.url);
-//   const loanId = searchParams.get("loanId");
-//   const page = parseInt(searchParams.get("page") || 1);
-//   const limit = parseInt(searchParams.get("limit") || 10);
-
-//   try {
-//     const where = loanId ? { loanId } : {};
-//     const repayments = await prisma.repayment.findMany({
-//       where,
-//       skip: (page - 1) * limit,
-//       take: limit,
-//       orderBy: { repaidAt: "desc" },
-//     });
-
-//     const total = await prisma.repayment.count({ where });
-
-//     return NextResponse.json({ repayments, total }, { status: 200 });
-//   } catch (error) {
-//     console.error("Error fetching repayments:", error);
-//     return NextResponse.json(
-//       { error: "Failed to fetch repayments" },
-//       { status: 500 }
-//     );
-//   }
-// }

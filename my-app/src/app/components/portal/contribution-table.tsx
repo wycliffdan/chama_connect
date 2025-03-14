@@ -72,7 +72,7 @@ export default function ContributionTable({ chamaaId }: { chamaaId: string }) {
           ) : (
             contributions.map((contribution) => (
               <tr key={contribution.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{contribution.user.name}</td>
+                <td className="px-4 py-2 border-b">{contribution.user?.name || "Unknown use"}</td>
                 <td className="px-4 py-2 border-b">{contribution.amount.toLocaleString()}</td>
                 <td className="px-4 py-2 border-b">
                   {new Date(contribution.createdAt).toLocaleDateString()}
