@@ -1,51 +1,136 @@
+// import { NextResponse } from "next/server";
+// import { prisma } from "@/lib/prisma";
+
+// // PUT: Submit a loan repayment
+// export async function POST(req: Request) {
+//   try {
+//     const { loanId, amount } = await req.json();
+
+//     // ✅ Validate input
+//     if (!loanId || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+//       return NextResponse.json(
+//         { error: "Invalid loan ID or amount" },
+//         { status: 400 }
+//       );
+//     }
+
+//     const parsedAmount = parseFloat(amount);
+
+//     // ✅ Fetch the loan details
+//     const loan = await prisma.loan.findUnique({
+//       where: { id: loanId },
+//       select: { id: true, totalRepaymentAmount: true, status: true }, // Only fetch necessary fields
+//     });
+
+//     if (!loan) {
+//       return NextResponse.json({ error: "Loan not found" }, { status: 404 });
+//     }
+
+//     if (loan.status === "repaid") {
+//       return NextResponse.json({ error: "Loan is already fully repaid" }, { status: 400 });
+//     }
+
+//     // ✅ Fetch all repayments made for this loan
+//     const totalRepaid = await prisma.repayment.aggregate({
+//       where: { loanId },
+//       _sum: { amount: true },
+//     });
+
+//     const totalRepaidAmount = totalRepaid._sum.amount || 0;
+
+//     // ✅ Check if repayment exceeds the remaining amount
+//     if (parsedAmount + totalRepaidAmount > loan.totalRepaymentAmount) {
+//       return NextResponse.json(
+//         { error: "Repayment exceeds remaining loan balance" },
+//         { status: 400 }
+//       );
+//     }
+
+//     // ✅ Create a new repayment record
+//     const repayment = await prisma.repayment.create({
+//       data: {
+//         loanId,
+//         amount: parsedAmount,
+//         repaidAt: new Date(),
+//       },
+//     });
+
+//     // ✅ Update loan status if fully repaid
+//     if (parsedAmount + totalRepaidAmount === loan.totalRepaymentAmount) {
+//       await prisma.loan.update({
+//         where: { id: loanId },
+//         data: { status: "repaid" },
+//       });
+//     }
+
+//     return NextResponse.json(repayment, { status: 200 });
+//   } catch (error) {
+//     console.error("Error processing repayment:", error);
+//     return NextResponse.json({ error: "Failed to process repayment" }, { status: 500 });
+//   }
+// }
+
+
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// PUT: Submit a loan repayment
-export async function PUT(req: Request) {
+// ✅ Submit a loan repayment (POST)
+export async function POST(req: Request) {
   try {
     const { loanId, amount } = await req.json();
 
-    // Validate input
-    if (!loanId || !amount || isNaN(parseFloat(amount))) {
+    // ✅ Validate input
+    if (!loanId || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return NextResponse.json(
-        { error: "Loan ID and amount are required" },
+        { error: "Invalid loan ID or amount" },
         { status: 400 }
       );
     }
 
-    // Fetch the loan to check its status and remaining amount
+    const parsedAmount = parseFloat(amount);
+
+    // ✅ Fetch the loan details
     const loan = await prisma.loan.findUnique({
       where: { id: loanId },
-      include: { repayments: true },
+      select: { id: true, totalRepaymentAmount: true, status: true },
     });
 
     if (!loan) {
-      return NextResponse.json(
-        { error: "Loan not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Loan not found" }, { status: 404 });
     }
 
     if (loan.status === "repaid") {
+      return NextResponse.json({ error: "Loan is already fully repaid" }, { status: 400 });
+    }
+
+    // ✅ Fetch all repayments made for this loan
+    const totalRepaid = await prisma.repayment.aggregate({
+      where: { loanId },
+      _sum: { amount: true },
+    });
+
+    const totalRepaidAmount = totalRepaid._sum.amount || 0;
+
+    // ✅ Check if repayment exceeds the remaining amount
+    if (parsedAmount + totalRepaidAmount > loan.totalRepaymentAmount) {
       return NextResponse.json(
-        { error: "Loan has already been repaid" },
+        { error: "Repayment exceeds remaining loan balance" },
         { status: 400 }
       );
     }
 
-    // Create a repayment record
+    // ✅ Create a new repayment record
     const repayment = await prisma.repayment.create({
       data: {
         loanId,
-        amount: parseFloat(amount),
+        amount: parsedAmount,
         repaidAt: new Date(),
       },
     });
 
-    // Update the loan status if fully repaid
-    const totalRepayments = loan.repayments.reduce((sum, r) => sum + r.amount, 0) + parseFloat(amount);
-    if (totalRepayments >= loan.totalRepaymentAmount) {
+    // ✅ Update loan status if fully repaid
+    if (parsedAmount + totalRepaidAmount === loan.totalRepaymentAmount) {
       await prisma.loan.update({
         where: { id: loanId },
         data: { status: "repaid" },
@@ -55,9 +140,6 @@ export async function PUT(req: Request) {
     return NextResponse.json(repayment, { status: 200 });
   } catch (error) {
     console.error("Error processing repayment:", error);
-    return NextResponse.json(
-      { error: "Failed to process repayment" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to process repayment" }, { status: 500 });
   }
 }

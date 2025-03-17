@@ -32,25 +32,34 @@ export default function DashboardPage() {
     totalRepayments: 0,
   });
 
+  
+  
   useEffect(() => {
-    // Fetch summary data from the API
-    const fetchSummary = async () => {
+    const fetchLoans = async () => {
       try {
-        const response = await fetch("/api/dashboard/summary");
+        const response = await fetch("/api/loans"); // Change this to your actual API route
         if (!response.ok) {
-          throw new Error("Failed to fetch summary data.");
+          throw new Error("Failed to fetch loans");
         }
-        const data = await response.json();
-        setSummary(data);
+        const loans = await response.json();
+  
+        // Calculate total loans from the fetched loan data
+        const totalLoanAmount = loans.reduce((sum, loan) => sum + loan.amount, 0);
+  
+        setSummary(prev => ({
+          ...prev,
+          totalLoans: totalLoanAmount
+        }));
       } catch (error) {
-        console.error("Error fetching summary data:", error);
+        console.error("Error fetching loans:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchSummary();
+  
+    fetchLoans();
   }, []);
+  
 
   if (loading) {
     return (

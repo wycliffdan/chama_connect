@@ -1,17 +1,20 @@
+
+
+
+
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface BankLoan {
   id: string;
   amount: number;
   userId: string;
-  status: string;
   interestRate: number;
   repaymentPeriod: number;
   totalRepaymentAmount: number;
+  status: string;
   dueDate: string;
   createdAt: string;
 }
@@ -19,7 +22,6 @@ interface BankLoan {
 export default function BankLoanTable() {
   const [loans, setLoans] = useState<BankLoan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRepaying, setIsRepaying] = useState(false);
 
   useEffect(() => {
     fetchLoans();
@@ -27,8 +29,7 @@ export default function BankLoanTable() {
 
   const fetchLoans = async () => {
     try {
-      const response = await fetch("/api/loans/bank");
-      // const response = await fetch("/api/loans");
+      const response = await fetch("/api/loans");
       if (!response.ok) {
         throw new Error("Failed to fetch loans.");
       }
@@ -38,33 +39,6 @@ export default function BankLoanTable() {
       alert("Failed to fetch loans. Please try again.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleRepay = async (loanId: string) => {
-    setIsRepaying(true);
-    try {
-      const response = await fetch("/api/loans/repay", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loanId }),
-      });
-
-      if (response.ok) {
-        setLoans((prev) =>
-          prev.map((loan) =>
-            loan.id === loanId ? { ...loan, status: "repaid" } : loan
-          )
-        );
-        alert("The loan has been marked as repaid.");
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || "Failed to repay loan.");
-      }
-    } catch (error) {
-      alert("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsRepaying(false);
     }
   };
 
@@ -88,13 +62,12 @@ export default function BankLoanTable() {
             <th className="px-4 py-2 border-b">Total Repayment (Ksh)</th>
             <th className="px-4 py-2 border-b">Status</th>
             <th className="px-4 py-2 border-b">Due Date</th>
-            <th className="px-4 py-2 border-b">Action</th>
           </tr>
         </thead>
         <tbody>
           {loans.length === 0 ? (
             <tr>
-              <td colSpan={8} className="text-center py-4">
+              <td colSpan={7} className="text-center py-4">
                 No loans found.
               </td>
             </tr>
@@ -105,27 +78,11 @@ export default function BankLoanTable() {
                 <td className="px-4 py-2 border-b">{loan.amount.toLocaleString()}</td>
                 <td className="px-4 py-2 border-b">{loan.interestRate}</td>
                 <td className="px-4 py-2 border-b">{loan.repaymentPeriod}</td>
-                <td className="px-4 py-2 border-b">{loan.totalRepaymentAmount.toLocaleString()}</td>
+                <td className="px-4 py-2 border-b">{loan.totalRepaymentAmount ? loan.totalRepaymentAmount.toLocaleString() : "N/A"}</td>
+
                 <td className="px-4 py-2 border-b">{loan.status}</td>
                 <td className="px-4 py-2 border-b">
                   {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : "N/A"}
-                </td>
-                <td className="px-4 py-2 border-b">
-                  {loan.status === "approved" && (
-                    <Button
-                      onClick={() => handleRepay(loan.id)}
-                      disabled={isRepaying}
-                    >
-                      {isRepaying ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Repaying...
-                        </>
-                      ) : (
-                        "Repay"
-                      )}
-                    </Button>
-                  )}
                 </td>
               </tr>
             ))

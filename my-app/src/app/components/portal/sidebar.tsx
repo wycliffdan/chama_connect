@@ -50,11 +50,8 @@ export default function Sidebar(){
               Settings
             </Link>
           </li>
-          <li>
-          <Link href="/portal/finance-charts" className="hover:text-blue-200">
-              Finance Charts
-            </Link>
-          </li>
+          
+          
                 </ul>
             </nav>
         </div>

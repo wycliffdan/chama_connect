@@ -178,7 +178,9 @@ export default function LoanManagementPage() {
           onClick={() => setShowCalendar(!showCalendar)}
         >
           <CalendarIcon className="h-4 w-4" />
-          {format(new Date(dueDate), 'PPP')}
+          {/* {format(new Date(dueDate), 'PPP')} */}
+          {dueDate ? format(new Date(dueDate), 'PPP') : "N/A"}
+
         </Button>
         
         {showCalendar && (
@@ -316,12 +318,12 @@ export default function LoanManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* {filteredLoans.map((loan) => { */}
               {filteredLoans.map((loan) => {
+              {/* {filteredLoans.map((loan) => {
   if (!loan?.member) {
     console.error("Loan missing member data:", loan);
     return null;
-  }
+  } */}
                 // const totalRepaid = loan.repayments.reduce((sum, r) => sum + r.amount, 0);
                 const totalRepaid = loan.repayments?.reduce((sum, r) => sum + r.amount, 0) || 0;
 
@@ -330,7 +332,7 @@ export default function LoanManagementPage() {
 
                 return (
                   <TableRow key={loan.id}>
-                    <TableCell>{loan.member.name}</TableCell>
+                    {/* <TableCell>{loan.member.name}</TableCell> */}
                     <TableCell>KES {loan.amount.toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge variant={loan.status === 'approved' ? 'default' : 'secondary'}>

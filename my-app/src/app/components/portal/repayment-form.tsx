@@ -1,110 +1,212 @@
 
-"use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+'use client';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+interface Loan {
+  id: string;
+  amount: number;
+  status: string;
+  memberId: string;
+  repayments: { 
+    id: string;
+    amount: number;
+    paymentDate: string;
+  }[];
+  createdAt: string;
+  dueDate: string;
+}
 
 export default function RepaymentForm({ loanId }: { loanId: string }) {
-  const [amount, setAmount] = useState("");
-  const [remainingBalance, setRemainingBalance] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loan, setLoan] = useState<Loan | null>(null);
+  const [amount, setAmount] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  // Fetch the remaining loan balance
+  // Fetch loan details with repayments
+  const fetchLoan = async () => {
+    try {
+      const response = await fetch(`/api/loans/${loanId}`);
+      if (!response.ok) throw new Error('Failed to fetch loan');
+      const data = await response.json();
+      setLoan(data);
+    } catch (error) {
+      console.error("Failed to fetch loan:", error);
+      setError('Failed to load loan details');
+    }
+  };
+
   useEffect(() => {
-    const fetchLoanDetails = async () => {
-      try {
-        const response = await fetch(`/api/loans/${loanId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch loan details.");
-        }
-        const loan = await response.json();
-        const repaymentsResponse = await fetch(`/api/loans/repay?loanId=${loanId}`);
-        const repayments = await repaymentsResponse.json();
-        const totalRepaid = repayments.reduce((sum: number, r: any) => sum + r.amount, 0);
-        setRemainingBalance(loan.totalRepaymentAmount - totalRepaid);
-      } catch (error) {
-        setError("Failed to fetch loan details.");
-      }
-    };
-
-    fetchLoanDetails();
+    if (loanId) fetchLoan();
   }, [loanId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loan) return;
 
-    if (!amount || isNaN(parseFloat(amount))) {
-      setError("Please enter a valid repayment amount.");
-      return;
-    }
-
-    if (parseFloat(amount) > remainingBalance) {
-      setError("Repayment amount cannot exceed the remaining balance.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError("");
-    setSuccess("");
+    setError(null);
+    setSuccess(false);
+    setLoading(true);
 
     try {
-      const response = await fetch("/api/loans/repay", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loanId, amount: parseFloat(amount) }),
+      const paymentAmount = parseFloat(amount);
+      if (isNaN(paymentAmount) || paymentAmount <= 0) {
+        throw new Error('Invalid payment amount');
+      }
+
+      const response = await fetch('/api/repayments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          loanId: loan.id,
+          amount: paymentAmount
+        })
       });
 
-      if (response.ok) {
-        setSuccess("Repayment submitted successfully!");
-        setAmount("");
-        setRemainingBalance((prev) => prev - parseFloat(amount));
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error || "Failed to submit repayment.");
+        throw new Error(errorData.error || 'Payment failed');
       }
+
+      // Refresh data and show success
+      await fetchLoan();
+      setAmount('');
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
+      setError(error instanceof Error ? error.message : 'Payment failed');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
+  if (!loan) return <div className="text-center py-4">Loading loan details...</div>;
+
+  const totalRepaid = loan.repayments.reduce((sum, r) => sum + r.amount, 0);
+  const remainingBalance = loan.amount - totalRepaid;
+  const repaymentProgress = (totalRepaid / loan.amount) * 100;
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="amount" className="block text-sm font-medium">
-          Repayment Amount (Ksh)
-        </label>
-        <Input
-          id="amount"
-          type="number"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-          min="0"
-          step="0.01"
-        />
-        <p className="text-sm text-gray-600">
-          Remaining Balance: Ksh {remainingBalance.toLocaleString()}
-        </p>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6">Loan Repayment</h2>
+      
+      {/* Loan Summary */}
+      <div className="mb-8 space-y-4 bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-muted-foreground">Loan Date</Label>
+            <p className="font-medium">
+              {new Date(loan.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Due Date</Label>
+            <p className="font-medium">
+              {new Date(loan.dueDate).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Original Amount:</span>
+            <span className="font-medium">KES {loan.amount.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Total Repaid:</span>
+            <span className="font-medium">KES {totalRepaid.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Remaining Balance:</span>
+            <span className="font-medium">KES {remainingBalance.toLocaleString()}</span>
+          </div>
+        </div>
+        
+        <Progress value={repaymentProgress} className="h-2" />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {success && <p className="text-sm text-green-600">{success}</p>}
-      <Button type="submit" onClick={handleSubmit} disabled={isSubmitting} className="w-full">
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Submitting...
-          </>
-        ) : (
-          "Submit Repayment"
-        )}
-      </Button>
+
+      {/* Repayment Form */}
+      <form onSubmit={handleSubmit} className="space-y-6 mb-8">
+        <div className="space-y-2">
+          <Label htmlFor="amount">Payment Amount</Label>
+          <Input
+            type="number"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Enter amount"
+            min="0"
+            max={remainingBalance}
+            step="0.01"
+            required
+            disabled={remainingBalance <= 0}
+          />
+          <p className="text-sm text-muted-foreground">
+            Maximum payable amount: KES {remainingBalance.toLocaleString()}
+          </p>
+        </div>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {success && <p className="text-green-500 text-sm">Payment successful!</p>}
+
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={loading || remainingBalance <= 0}
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin">↻</span>
+              Processing...
+            </span>
+          ) : remainingBalance <= 0 ? (
+            'Loan Fully Repaid'
+          ) : (
+            'Submit Payment'
+          )}
+        </Button>
+      </form>
+
+      {/* Repayment History */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Payment History</h3>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loan.repayments.map((repayment) => (
+              <TableRow key={repayment.id}>
+                <TableCell>
+                  {new Date(repayment.paymentDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell>KES {repayment.amount.toLocaleString()}</TableCell>
+                <TableCell>
+                  <span className="text-green-500">Completed</span>
+                </TableCell>
+              </TableRow>
+            ))}
+            {loan.repayments.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  No payments recorded yet
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

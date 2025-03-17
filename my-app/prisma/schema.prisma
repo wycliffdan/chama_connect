@@ -25,3 +25,73 @@ model Loan {
   // memberId  String
   status    String @default("Pending")
 }
+
+
+model Repayment {
+  id          String   @id @default(uuid())
+  amount      Float
+  dueDate     DateTime
+  paidDate    DateTime?
+  status      String   @default("pending") // pending, completed, overdue
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Meeting {
+  id          String   @id @default(uuid())
+  title       String
+  date        DateTime
+  location    String?
+  description String?
+  // attendees   Member[]
+  createdAt   DateTime @default(now())
+}
+
+
+
+model Updates {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+}
+
+model User {
+
+  id        String   @id @default(cuid())
+
+  name      String
+
+  email     String   @unique
+
+  password  String
+
+  chamas    Chama[]
+
+}
+
+
+model Chama {
+
+  id        String   @id @default(cuid())
+
+  name      String
+
+  members   User[]   @relation("ChamaMembers")
+
+  payouts    Payout[]
+
+}
+
+model RoscaPayout {
+  id          Int      @id @default(autoincrement())
+  roscaId     Int
+  memberId    Int
+  amount      Float
+  payoutDate  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("rosca_payouts")
+}
