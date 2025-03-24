@@ -1,52 +1,102 @@
-"use client"; // Required for client-side interactivity
+"use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 
 export default function AddUpdateForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add logic to save the update (e.g., API call)
-    console.log({ title, description });
-    alert("Update added successfully!");
-    setTitle("");
-    setDescription("");
+  
+    if (!title || !description || !date) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+  
+    setIsSubmitting(true);
+  
+    try {
+      const response = await fetch("/api/updates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title, description, date }),
+      });
+  
+      if (response.ok) {
+        alert("Update submitted successfully!");
+        setTitle("");
+        setDescription("");
+        setDate("");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to submit update.");
+      }
+    } catch (error) {
+      console.error("Error submitting update:", error);
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Add New Update</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-800 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Add Update
-        </button>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label htmlFor="title" className="block text-sm font-medium">
+          Title
+        </label>
+        <Input
+          id="title"
+          type="text"
+          placeholder="Enter title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
       </div>
+      <div className="space-y-2">
+        <label htmlFor="description" className="block text-sm font-medium">
+          Description
+        </label>
+        <Input
+          id="description"
+          type="text"
+          placeholder="Enter description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="date" className="block text-sm font-medium">
+          Date
+        </label>
+        <Input
+          id="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+        />
+      </div>
+      <Button type="submit" disabled={isSubmitting} className="w-full">
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          "Submit Update"
+        )}
+      </Button>
     </form>
   );
- }
-
-
+}

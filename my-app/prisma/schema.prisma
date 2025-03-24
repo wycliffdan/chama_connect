@@ -17,6 +17,13 @@ model Contribution {
   status   String
   year     BigInt
 }
+  model Update {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String   // Update Title
+  description String   // Update Description
+   date        DateTime @db.Date
+  
+}
 
 model Loan {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
@@ -25,15 +32,18 @@ model Loan {
   purpose  String
   status   String
 }
+
 model Meeting {
-   id       String @id @default(auto()) @map("_id") @db.ObjectId
-  title        String
-  description  String
-  date         DateTime
-  time         String
-  location     String
-  agenda       String
-  organizerId  String
-  chamaaId     String
-  status       String   @default("Scheduled")
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  agenda      String
+  chamaaId    String
+  date        DateTime @db.Date
+  description String
+  location    String
+  organizerId String
+  status      String
+  time        String
+  title       String
 }
+  
+

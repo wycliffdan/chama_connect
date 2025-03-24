@@ -24,3 +24,5 @@ export default function NewUpdatesList() {
     </div>
   );
 }
+
+

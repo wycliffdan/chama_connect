@@ -3,6 +3,7 @@
 
 import AddUpdateForm from "@/app/components/portal/add-update-form";
 import NewUpdatesList from "@/app/components/portal/new-updates-list";
+// import NewUpdatesList from "@/app/components/portal/new-updates-list";
 
 export default function NewUpdatesPage() {
   return (

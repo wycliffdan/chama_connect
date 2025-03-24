@@ -16,50 +16,8 @@ export default function MeetingForm() {
   const [agenda, setAgenda] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     const response = await fetch("/api/meetings", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         title,
-  //         description,
-  //         date,
-  //         time,
-  //         location,
-  //         agenda,
-  //         organizerId: "your-organizer-id", // Replace with dynamic organizer ID
-  //         chamaaId: "your-chamaa-id", // Replace with dynamic chamaa ID
-  //       }),
-  //     });
-    
-      
-
-  //     if (response.ok) {
-  //       alert("Meeting created successfully!");
-  //       setTitle("");
-  //       setDescription("");
-  //       setDate("");
-  //       setTime("");
-  //       setLocation("");
-  //       setAgenda("");
-  //     } else {
-  //       const errorData = await response.json();
-  //       alert(errorData.error || "Failed to create meeting.");
-  //     }
-  //   } catch (error) {
-  //     alert("An unexpected error occurred. Please try again.");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
+  
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
