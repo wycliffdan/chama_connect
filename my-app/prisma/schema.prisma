@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Contribution {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  amount   Float
-  chamaaId String   @db.ObjectId
+    id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  amount           Float
+  // contributionDate DateTime
   date     DateTime @db.Date
-  memberId String   @db.ObjectId
-  month    BigInt
-  status   String
-  year     BigInt
+  month           Int
+  memberId        String
+  chamaaId         String
+  createdAt       DateTime @default(now())
 }
+
   model Update {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -30,11 +31,20 @@ model Contribution {
 model Loan {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   amount   Float
-  duration BigInt
+  // duration BigInt
+   duration Int
   purpose  String
   status   String
+  repayments Repayment[] 
 }
 
+model Repayment {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId    String
+  amount    Float    // Repayment amount
+  paidAt    DateTime @default(now()) // Timestamp when payment was made
+}
 model Meeting {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   agenda      String

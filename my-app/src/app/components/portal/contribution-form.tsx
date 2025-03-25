@@ -61,9 +61,12 @@ const ContributionsPage = () => {
         body: JSON.stringify({
           amount: numericAmount,
           date: new Date(date).toISOString(),
+          // contributionDate: new Date(date).toISOString(),
+
           month: numericMonth,
           memberId,
           chamaaId
+          // chamaId
         }),
       });
 
@@ -119,7 +122,7 @@ const ContributionsPage = () => {
 
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
-            Contribution Date
+            Date
           </label>
           <input
             type="datetime-local"
@@ -167,7 +170,7 @@ const ContributionsPage = () => {
           </label>
           <input
             type="text"
-            id="chamaaId"
+            id="chamaId"
             value={chamaaId}
             onChange={(e) => setChamaaId(e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
