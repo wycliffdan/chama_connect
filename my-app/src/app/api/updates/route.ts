@@ -3,34 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Create a new update
-export async function POST(req: Request) {
-  try {
-    const data = await req.json();
-    const { title, description, chamaaId, memberId } = data;
-
-    // Validate required fields
-    if (!title || !description || !chamaaId || !memberId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    const update = await prisma.update.create({
-      data: {
-        title,
-        description,
-        chamaaId,
-        memberId,
-      },
-    });
-
-    return NextResponse.json(update, { status: 201 });
-  } catch (error) {
-    console.error("Database Error:", error);
-    return NextResponse.json({ error: "Failed to create update" }, { status: 500 });
-  }
-}
-
-// Get all updates
+// ✅ Fetch all updates (GET)
 export async function GET() {
   try {
     const updates = await prisma.update.findMany();
@@ -41,42 +14,40 @@ export async function GET() {
   }
 }
 
-// Update an existing update
-export async function PUT(req: Request) {
+// ✅ Create a new update (POST)
+export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { id, title, description } = data;
+    console.log("Received Update Data:", data);
 
-    if (!id) {
-      return NextResponse.json({ error: "Update ID is required" }, { status: 400 });
+    if (!data) {
+      return NextResponse.json({ error: "Empty request body" }, { status: 400 });
     }
 
-    const updatedUpdate = await prisma.update.update({
-      where: { id },
-      data: { title, description },
+    const requiredFields = ["title", "description", "date"];
+    const missingFields = requiredFields.filter(field => !data[field]);
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missingFields.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    const update = await prisma.update.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        date: new Date(data.date),
+      },
     });
 
-    return NextResponse.json(updatedUpdate, { status: 200 });
+    console.log("Update Saved:", update);
+
+    return NextResponse.json(update, { status: 201 });
+
   } catch (error) {
     console.error("Database Error:", error);
-    return NextResponse.json({ error: "Failed to update update" }, { status: 500 });
-  }
-}
-
-// Delete an update
-export async function DELETE(req: Request) {
-  try {
-    const { id } = await req.json();
-
-    if (!id) {
-      return NextResponse.json({ error: "Update ID is required" }, { status: 400 });
-    }
-
-    await prisma.update.delete({ where: { id } });
-
-    return NextResponse.json({ message: "Update deleted successfully" }, { status: 200 });
-  } catch (error) {
-    console.error("Database Error:", error);
-    return NextResponse.json({ error: "Failed to delete update" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create update" }, { status: 500 });
   }
 }

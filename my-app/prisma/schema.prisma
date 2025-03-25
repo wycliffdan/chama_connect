@@ -19,9 +19,11 @@ model Contribution {
 }
   model Update {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
-  title       String   // Update Title
-  description String   // Update Description
-   date        DateTime @db.Date
+  title       String
+  description String
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
 }
 
